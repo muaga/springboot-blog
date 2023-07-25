@@ -6,8 +6,11 @@
     <title>Document</title>
   </head>
   <body>
-    <h1>test 파일 연결 확인</h1>
-    {{! 참조 변수 }}
-    <h2>{{ username }}</h2>
+    <h1>users 파일 연결 확인</h1>
+    {{! 오브젝트 객체를 view할 때 }}
+    {{#list}}
+    {{ id }}
+    {{ username }}
+    {{/list}}
   </body>
 </html>

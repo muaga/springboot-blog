@@ -6,8 +6,13 @@
     <title>Document</title>
   </head>
   <body>
-    <h1>test 파일 연결 확인</h1>
-    {{! 참조 변수 }}
-    <h2>{{ username }}</h2>
+    <h1>array 파일 연결 확인</h1>
+    {{! 1. for문 2.if문(true시 실행, fales 미실행) }}
+    {{#list}}
+    {{.}}
+    {{/list}}
+
+    {{! list 중 1개만 view하고 싶을 때 }}
+    {{list.0}}
   </body>
 </html>
