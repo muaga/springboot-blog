@@ -47,16 +47,12 @@ public class UserController {
         return "user/updateForm";
     }
 
-    @GetMapping("/logout")
-    public String logout() {
-        return "redirect:/";
-    }
-
     // 4. 실무 -> 이 방법을 사용해야 한다.
     @PostMapping("/join")
     public String join(JoinDTO joinDTO) {
-
+        // 부가로직
         // 유효성검사 = validation check
+        // 공백, null 체크(우회 접근 제한)
         if (joinDTO.getUsername() == null || joinDTO.getUsername().isEmpty()) {
             return "redirct:/40x";
         }
@@ -72,9 +68,10 @@ public class UserController {
         }
         // 조건에 null, 공백 등 받지 말아야 되는 데이터를 생각하고 막아야 한다.
 
+        // 핵심로직
+        // 중복 방지
         try {
             userRepository.save(joinDTO);
-            // 핵심기능
             // 회원가입시 unique 위반으로, 여기서 오류가 터진다.
         } catch (Exception e) {
             return "redirect:/50x";
@@ -85,8 +82,9 @@ public class UserController {
 
     @PostMapping("/login")
     public String login(LoginDTO loginDTO) {
+        // 부가로직
         // 유효성검사 = validation check
-        // 공백, null 체크(우회접근 제한)
+        // 공백, null 체크(우회 접근 제한)
         if (loginDTO.getUsername() == null || loginDTO.getUsername().isEmpty()) {
             return "redirect:/40x";
         }
@@ -94,7 +92,7 @@ public class UserController {
             return "redirect:/40x";
         }
 
-        // 핵심기능
+        // 핵심로직
         try {
             User user = userRepository.findByUsernameAndPassword(loginDTO);
             session.setAttribute("sessionUser", user);
@@ -103,7 +101,14 @@ public class UserController {
         } catch (Exception e) {
             return "redirect:/exLogin";
         }
+    }
 
+    @GetMapping("/logout")
+    public String logout() {
+        session.invalidate();
+        // 내 sesson과 관련된 것 다 지우기
+        // 세션 무효화
+        return "redirect:/";
     }
 
     // ★ 핵심기능
