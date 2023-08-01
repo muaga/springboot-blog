@@ -80,7 +80,6 @@ public class UserController {
 
     @PostMapping("/login")
     public String login(LoginDTO loginDTO) {
-
         // 유효성검사 = validation check
         // 동일한 유저네임 또는 비밀번호
         if (loginDTO.getUsername() == null || loginDTO.getUsername().isEmpty()) {
@@ -91,12 +90,11 @@ public class UserController {
         }
 
         // 핵심기능
-        User user = userRepository.findByUsernameAndPassword(loginDTO);
-
-        if (user == null) {
-            return "redirect:/exLgin";
-        } else {
+        try {
+            User user = userRepository.findByUsernameAndPassword(loginDTO);
             return "redirect:/";
+        } catch (Exception e) {
+            return "redirect:/exLogin";
         }
 
     }
