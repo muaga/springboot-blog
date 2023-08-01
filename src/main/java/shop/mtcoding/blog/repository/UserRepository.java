@@ -22,6 +22,7 @@ public class UserRepository {
     @Autowired
     private EntityManager em;
 
+    // 로그인 기능
     public User findByUsernameAndPassword(LoginDTO loginDTO) {
         Query query = em.createNativeQuery("select * from user_tb where username = :username and password = :password",
                 User.class);
@@ -31,6 +32,7 @@ public class UserRepository {
         return (User) query.getSingleResult();
     }
 
+    // 회원가입 기능
     @Transactional // 롤백과 커밋을 자동으로 해준다.
     public void save(JoinDTO joinDTO) {
         Query query = em.createNativeQuery(

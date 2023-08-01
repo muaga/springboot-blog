@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
@@ -23,6 +24,10 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private HttpSession session; // request는 가방, session 서랍
+    // 로그인이 되면 session에 저장해야 한다.
 
     @GetMapping("/joinForm")
     public String joinForm() {
@@ -81,17 +86,19 @@ public class UserController {
     @PostMapping("/login")
     public String login(LoginDTO loginDTO) {
         // 유효성검사 = validation check
-        // 동일한 유저네임 또는 비밀번호
+        // 공백, null 체크(우회접근 제한)
         if (loginDTO.getUsername() == null || loginDTO.getUsername().isEmpty()) {
-            return "redirct:/50x";
+            return "redirect:/40x";
         }
         if (loginDTO.getPassword() == null || loginDTO.getPassword().isEmpty()) {
-            return "redirct:/50x";
+            return "redirect:/40x";
         }
 
         // 핵심기능
         try {
             User user = userRepository.findByUsernameAndPassword(loginDTO);
+            session.setAttribute("sessionUser", user);
+            // 서버 측에 sessionUser가 남겨져 있다.
             return "redirect:/";
         } catch (Exception e) {
             return "redirect:/exLogin";
