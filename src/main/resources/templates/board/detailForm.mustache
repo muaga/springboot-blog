@@ -7,30 +7,41 @@
         <div class="d-flex justify-content-start">
             <a href="/" class="btn btn-secondary">돌아가기</a>
         </div>
+
+        <!-- 수정 삭제 버튼 -->
+        {{#pageOwner}}
         <div class="d-flex justify-content-end">
-            <form action="#" method="post" enctype="application/x-www-form-urlencoded">
+            <!-- 수정은 수정페이지로 이동이기 때문에 get요청 또는 하이퍼링크 버튼으로 만들어도 된다 -->
+            <!-- 1. 버튼 -->
+            <form action="/board/{{board.id}}/updateForm" method="get" enctype="application/x-www-form-urlencoded">
                 <input type="hidden" class="form-control" value="수정" name="수정">
                 <button type="submit" class="btn btn-success">수정</button>
             </form>
-            <form action="#" method="post" enctype="application/x-www-form-urlencoded">
+            <!--2. 버튼 -->
+            <!-- <a class="btn btn-success" href="/board/{{board.id}}/updateForm">수정</a> -->
+            <form action="/board/{{board.id}}/delete" method="post" enctype="application/x-www-form-urlencoded">
                 <input type="hidden" class="form-control" value="삭제" name="삭제">
                 <button type="submit" class="btn btn-danger">삭제</button>
             </form>
         </div>
+        {{/pageOwner}}
     </div>
 
     <!-- 게시글내용 -->
+    {{#board}}
+    <!-- if문으로 감싸주지 않고 바로 {{board.id}}라고 하면 null값일 때 터진다.-->
     <div class="pt-1 d-flex justify-content-start">
         <div class="card form-control">
-            <td>글 번호 : 1</td>
-            <td>작성자 : ssar</td>
+            <td>글 번호 : {{id}}</td>
+            <td>작성자 : {{user.username}}</td>
             <div class="card-body">
-                <h3 class="card-title">title</h3>
+                <h3 class="card-title">{{title}}</h3>
                 </hr>
-                <p class="card-text">content</p>
+                <p class="card-text">{{content}}</p>
             </div>
         </div>
     </div>
+    {{/board}}
 
     <!-- 댓글내용 -->
     <div class="card form-control">

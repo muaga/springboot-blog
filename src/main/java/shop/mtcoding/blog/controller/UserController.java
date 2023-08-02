@@ -10,11 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import shop.mtcoding.blog.dto.JoinDTO;
 import shop.mtcoding.blog.dto.LoginDTO;
+import shop.mtcoding.blog.dto.UserUpdateDTO;
 import shop.mtcoding.blog.model.User;
 import shop.mtcoding.blog.repository.UserRepository;
 
@@ -41,10 +43,36 @@ public class UserController {
         return "user/loginForm";
     }
 
-    @GetMapping("/user/updateForm")
-    public String updateForm() {
+    // 회원 정보 수정 페이지 - select
+    @GetMapping("/user/{id}/updateForm")
+    public String updateForm(@PathVariable Integer id, HttpServletRequest request) {
+        // 부가로직
+        // 1. 로그인 인증
+        User user = userRepository.findById(id);
+        user = (User) session.getAttribute("sessionUser");
+        if (user == null) {
+            return "redirect:/loginForm";
+        }
+        // 핵심로직
+        request.setAttribute("user", user);
 
         return "user/updateForm";
+    }
+
+    // 회원 정보 수정 기능
+    @PostMapping("/user/{id}/update")
+    public String update(@PathVariable Integer id, UserUpdateDTO userUpdateDTO) {
+        // 부가로직
+        // 1. 로그인 인증
+        User user = userRepository.findById(id);
+        user = (User) session.getAttribute("sessionUser");
+        if (user == null) {
+            return "redirect:/loginForm";
+        }
+
+        // 핵심로직
+        userRepository.update(userUpdateDTO, id);
+        return "redirect:/";
     }
 
     // 4. 실무 -> 이 방법을 사용해야 한다.

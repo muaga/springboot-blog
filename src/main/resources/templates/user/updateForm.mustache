@@ -5,19 +5,21 @@
     <div class="card">
         <div class="card-header"><b>회원정보를 수정해주세요</b></div>
         <div class="card-body">
-            <form action="/updateForm" method="post" enctype="application/x-www-form-urlencoded">
+            {{#user}}
+            <form action="/user/{{id}}/update" method="post" enctype="application/x-www-form-urlencoded">
                 <!--method를 쓰지 않으면, 디폴트값이 GET이다.-->
                 <div class="mb-3">
-                    <input type="text" class="form-control" placeholder="Enter username" name="username" disabled>
+                    <input type="text" class="form-control" placeholder="Enter username" name="username" value="{{username}}" disabled>
                 </div>
                 <div class="mb-3">
-                    <input type="password" class="form-control" placeholder="Enter password" name="password">
+                    <input type="password" class="form-control" placeholder="Enter password" name="password" value="{{password}}">
                 </div>
                 <div class="mb-3">
-                    <input type="text" class="form-control" placeholder="Enter email" name="email" disabled>
+                    <input type="text" class="form-control" placeholder="Enter email" name="email" value="{{email}}" disabled>
                 </div>
                 <button type="submit" class="btn btn-primary form-control">회원수정완료</button>
                 <!--submit : form tag 안에 존재해서, form 속 내용을 한 번에 등록시켜준다.-->
+            {{/user}}
             </form>
         </div>
     </div>
