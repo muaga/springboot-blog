@@ -1,4 +1,5 @@
 {{> /layout/header}}
+<!-- HTTP 통신 -->
 <div class="container p-5">
     <!--요청을 하면 localhost:8080/join POST로 요청됨
     x-www-unlencoded는 key-value로 입력되는 방식으로 form tag에서는 name=""에서 key-value를 받는다.    
@@ -7,11 +8,16 @@
     <div class="card">
         <div class="card-header"><b>회원가입을 해주세요</b></div>
         <div class="card-body">
-            <form action="/join" method="post" enctype="application/x-www-form-urlencoded">
+            <form action="/join" method="post" enctype="application/x-www-form-urlencoded" onsubmit="return valid()">
+                <!-- onsubmit="return valid()" : 버튼을 클릭할 때, onsubmit에 걸린 vaild()를 실행하고 다음 action을 한다. 
+                값이 false이면 return값이 false이기 때문에 action을 하지 않는다. return값이 true이면 submit이 실행된다.
+                 * 여기서 프론트유효성검사를 할 수 있다.-->
                 <!--method를 쓰지 않으면, 디폴트값이 GET이다.-->
                 <div class="mb-3">
-                    <input type="text" class="form-control" placeholder="Enter username" name="username" required
-                        maxlength="20">
+                    <input type="text" id="username" class="form-control" placeholder="Enter username" name="username"
+                        required maxlength="20" onchange="usernameChange()">
+                    <button type="button" onclick="check()">중복체크</button>
+                    <!-- Form 태그 안의 button의 기본값은 submit이다. -->
                 </div>
                 <div class="mb-3">
                     <input type="password" class="form-control" placeholder="Enter password" name="password" required
@@ -21,10 +27,71 @@
                     <input type="email" class="form-control" placeholder="Enter email" name="email" required
                         maxlength="20">
                 </div>
-                <button type="submit" class="btn btn-primary form-control">회원가입</button>
+                <button type="submit" id="btnJoin" class="btn btn-primary form-control">회원가입</button>
                 <!--submit : form tag 안에 존재해서, form 속 내용을 한 번에 등록시켜준다.-->
             </form>
         </div>
     </div>
 </div>
+
+<!-- AJAX 통신 -->
+<!-- AJAX 통신의 기본 = JSON -->
+<script>
+    // 통신코드 -> view(html)를 하지 않고, 데이터만 응답 받았다.(AJAX 통신)
+    // promise 객체
+
+    // 책임 : input태그로부터 username을 가져와서(id걸기) 통신을 요청하고, 중복이 되었는지 확인한다.
+
+    // 중복체크를 아직 하지 않은 상태
+    let usernameSameCheck = false;
+
+    // 중복체크 버튼 유무 확인
+    function valid() {
+        if (usernameSameCheck) {
+            return true;
+            console.log("테스트1");
+        } else {
+            alert("유저네임 중복체크를 해주세요.");
+            return false;
+            console.log("테스트2");
+
+        }
+    }
+
+    // 중복체크 후 아이디 변경 한 다음 다시 중복체크 유무 확인
+    function usernameChange() {
+        console.log("변경됨");
+        usernameSameCheck = false;
+    }
+
+    async function check() {
+        // 1. Dom으로 부터 username 가져오기
+        let username = document.querySelector("#username").value;
+        console.log("유저네임", username);
+        // 메인스레드 입장에서는 행위의 시간이 얼마나 걸릴지 모르기 때문에 
+        // -> 이벤트Q에 저장한다. = 실행되지 않고 빠져나온다. >>>> 통신=IO관련=무조건이벤트Q등록
+
+        // 2. 통신 요청하기
+        let response = await fetch(`/check?username=${username}`);
+        // fetch가 똑같이 이벤트 Q에 저장되고 빠져나오는데, 빠져나오지 못하게 await를 넣어놓는다.
+        // await : 통신이 끝나기 전까지 대기해
+
+        // 3. 파싱하기 - response의 body를 파싱
+        let responseBody = await response.text();
+        // text() : responseEntity가 String타입으로 응답을 받았기 때문에(plain)
+        // JSON = response.JSON() : ★★ 응답의 기본전략 ; object객체를 responseEntity 받았을 때
+        console.log(responseBody);
+
+        // 4. 상태코드 확인하기
+        let btnJoin = document.querySelector("#btnJoin");
+        if (response.status == 200) { // 중복 X
+            alert(responseBody);
+            usernameSameCheck = true;
+
+        } else {
+            alert(responseBody); // 중복 O
+            usernameSameCheck = false;
+        }
+    }
+</script>
 {{> /layout/footer}}

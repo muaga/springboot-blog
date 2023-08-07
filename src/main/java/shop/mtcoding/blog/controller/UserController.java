@@ -4,15 +4,19 @@ import java.io.BufferedReader;
 import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import shop.mtcoding.blog.dto.JoinDTO;
 import shop.mtcoding.blog.dto.LoginDTO;
@@ -74,9 +78,10 @@ public class UserController {
         userRepository.update(userUpdateDTO, id);
         return "redirect:/";
     }
+    ///////////////////////////////////////////////////////////////////////////////////////////////
 
     // 4. 실무 -> 이 방법을 사용해야 한다.
-    @PostMapping("/join")
+    // @PostMapping("/join")
     public String join(JoinDTO joinDTO) {
         // 부가로직
         // 유효성검사 = validation check
@@ -101,6 +106,7 @@ public class UserController {
         try {
             userRepository.save(joinDTO);
             // 회원가입시 unique 위반으로, 여기서 오류가 터진다.
+            // Repository에서는 executeUpdate()에서 오류가 터진다.
         } catch (Exception e) {
             return "redirect:/50x";
         }
@@ -108,6 +114,52 @@ public class UserController {
         return "redirect:/loginForm";
     }
 
+    // 안전한 코드 작성 실습(오류가 터질 것은 try-catch가 아닌 코드로 터지지 않게 막는다.)
+    @PostMapping("/join")
+    public String join1(JoinDTO joinDTO) {
+
+        // 부가로직
+        if (joinDTO.getUsername() == null || joinDTO.getUsername().isEmpty()) {
+            return "redirct:/40x";
+        }
+
+        if (joinDTO.getPassword() == null || joinDTO.getPassword().isEmpty()) {
+            return "redirct:/40x";
+        }
+        if (joinDTO.getEmail() == null || joinDTO.getEmail().isEmpty()) {
+            return "redirct:/40x";
+        }
+
+        // DB에 해당 username이 있는 지 체크해보기
+        // 예외에 대비한 대비코드
+        User user = userRepository.findByUsername(joinDTO.getUsername());
+        if (user != null) {
+            return "redirect:/50x";
+        }
+
+        // 핵심기능
+        userRepository.save(joinDTO);
+        return "redirect:/loginForm";
+
+    }
+
+    // localhost:8080/check?username=ssar
+    // 스프링과 JS 연결하기 - 중복체크 버튼 = AJAX 통신
+    @GetMapping("/check")
+    public ResponseEntity<String> check(String username) {
+        // ResponseEntity - String 데이터를 응답한다. ; body의 타입
+        // 1. ResponseBody를 안 적어도 된다.
+        // 2. HttpServletResponse를 안 적어도 된다.
+        User user = userRepository.findByUsername(username); // null오류는 try-catch는 repository에
+        if (user != null) {
+            return new ResponseEntity<String>("유저네임이 중복되었습니다.", HttpStatus.BAD_REQUEST);
+            // "유저네임이 중복되었습니다" : 응답 / BAD : HTTP 상태코드
+            // ★★★ HTTP 상태코드 -> 이것을 기준으로 then/catch를 나눈다.
+        }
+        return new ResponseEntity<String>("유저네임을 사용할 수 없습니다.", HttpStatus.OK);
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
     @PostMapping("/login")
     public String login(LoginDTO loginDTO) {
         // 부가로직
@@ -139,55 +191,4 @@ public class UserController {
         return "redirect:/";
     }
 
-    // ★ 핵심기능
-
-    // // 3. 정상
-    // // DS가 파싱, 메소드 찾기
-    // @PostMapping("/join")
-    // public String join(String username, String password, String email) {
-    // System.out.println("username : " + username);
-    // System.out.println("password : " + password);
-    // System.out.println("email : " + email);
-    // return "redirect:/loginForm";
-    // }
-
-    // // 2. 약간 정상
-    // // DS(Controller 메소드 찾기, 바디 데이터 파싱)
-    // // DS가 바디데이터를 파싱 안하고, Controller 메소드만 찾는 상황
-    // // 1차 자동, 2차 파싱 내가 직접
-    // @PostMapping("/join")
-    // public String join(HttpServletRequest request) {
-    // String username = request.getParameter("username");
-    // String password = request.getParameter("password");
-    // String email = request.getParameter("email");
-    // return "redirect:/loginForm";
-    // }
-    // // HTTP로 받는 통신을 받기 위해서는 위의 코드로 작성해야 한다.
-    // // request.getParameter -> X-www.urlencoded로 들어온 모든 데이터를 파싱한다.
-
-    // // 1. 비정상
-    // // 직접 bufferReader로 받고
-    // // 1차, 2차 파싱 내가 직접
-    // // 2차 파싱은 getParameter로 하기엔 바디가 이미 소비되어버려, split해야한다......
-    // @PostMapping("/join")
-    // public String join(HttpServletRequest request) throws IOException {
-    // // username=ssar&password=1234&email=ssar@nate.com
-    // BufferedReader br = request.getReader();
-    // // 버퍼에서 헤드는 읽고 지우고, 바디는 읽고 지우지 않는다. 그래서 바디만 남아있다.
-    // // 그래서 바디에 남은 데이터만 request 객체로 1차파싱한다.
-    // String body = br.readLine();
-    // // ★ 버퍼를 읽어서 소비가 되었다.
-
-    // String username = request.getParameter("username");
-    // // X, ★ 이미 바디 버퍼가 소비되어 나올 수가 없다.
-
-    // System.out.println("body : " + body);
-    // // 출력은 body = username=ssar&password=1234&email=ssar@nate.com 이렇게 출력된다.
-    // // x-www-urlencoded로 출력된다.
-    // System.out.println("username : " + username);
-    // // 출력은 username = null
-    // // 버퍼가 비어서 빈 값이다.
-
-    // return "redirect:/loginForm";
-    // }
 }
