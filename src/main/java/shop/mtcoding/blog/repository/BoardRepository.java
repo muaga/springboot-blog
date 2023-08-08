@@ -6,10 +6,12 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
+import org.qlrm.mapper.JpaResultMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import shop.mtcoding.blog.dto.BoardDetailDTO;
 import shop.mtcoding.blog.dto.UpdateDTO;
 import shop.mtcoding.blog.dto.WriteDTO;
 import shop.mtcoding.blog.model.Board;
@@ -68,6 +70,38 @@ public class BoardRepository {
         // intValue()
         // 해당 숫자 타입의 값을 int로 변환해서 반환한다.
         // BigInteger로 "8"을 받고, 온전히 "8"라는 문자열을 int로 변환한다고 생각하면 될 듯 하다.
+    }
+
+    // findById + 댓글기능
+    public List<BoardDetailDTO> findByIdJoinReply(Integer boardId) {
+        String sql = "select ";
+        sql += "b.id board_id, ";
+        sql += "b.content board_content, ";
+        sql += "b.title board_title, ";
+        sql += "b.user_id board_user_id, ";
+        sql += "r.id reply_id, ";
+        sql += "r.comment reply_comment, ";
+        sql += "r.user_id reply_user_id, ";
+        sql += "ru.username reply_user_username ";
+        sql += "from board_tb b left outer join reply_tb r ";
+        sql += "on b.id = r.board_id ";
+        sql += "left outer join user_tb ru ";
+        sql += "on r.user_id = ru.id ";
+        sql += "where b.id = :boardId ";
+        Query query = em.createNativeQuery(sql);
+        // QLRM
+        // model에 받지 않고, qlrm을 통해서 DTO에 데이터를 받아야 하는 경우
+        // 매핑 클래스를 createNativeQuery에 작성하지 않는다.
+        query.setParameter("boardId", boardId);
+        // :boardId = name:"boardId"
+
+        // 직접 오브젝트 매핑하기
+        JpaResultMapper mapper = new JpaResultMapper();
+        List<BoardDetailDTO> dtos = mapper.list(query, BoardDetailDTO.class);
+        // 1 row = uniqueResult
+        // 여러 row = list
+
+        return dtos;
     }
 
     // findById(글번호)

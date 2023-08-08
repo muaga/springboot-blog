@@ -12,12 +12,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import shop.mtcoding.blog.dto.BoardDetailDTO;
 import shop.mtcoding.blog.dto.UpdateDTO;
 import shop.mtcoding.blog.dto.WriteDTO;
 import shop.mtcoding.blog.model.Board;
+import shop.mtcoding.blog.model.Reply;
 import shop.mtcoding.blog.model.User;
 import shop.mtcoding.blog.repository.BoardRepository;
+import shop.mtcoding.blog.repository.ReplyRepository;
 
 @Controller
 public class BoardController {
@@ -28,6 +32,33 @@ public class BoardController {
 
     @Autowired
     private BoardRepository boardRepository;
+
+    @Autowired
+    private ReplyRepository replyRepository;
+
+    @ResponseBody
+    // 변수의 데이터를 JSON으로 보여준다.
+    // 객체의 데이터를 보고 싶을 때 해당 코드를 사용해보면 된다.
+    @GetMapping("/test/dtos")
+    public List<BoardDetailDTO> test2() {
+        List<BoardDetailDTO> dtos = boardRepository.findByIdJoinReply(1);
+        for (BoardDetailDTO boardDetailDTO : dtos) {
+            System.out.println("test : " + boardDetailDTO.getBoardTitle());
+        }
+        return dtos;
+        // model-board에 user 객체를 가지고 있기 때문에, user 데이터도 자동으로 호출한다.
+        // user 객체를 가져서 board가 FK임을 확인-연결이 되어 있기 때문이다.
+    }
+
+    @ResponseBody
+    // 변수의 데이터를 JSON으로 보여준다.
+    @GetMapping("/test/board/1")
+    public Board test() {
+        Board board = boardRepository.findById(1);
+        return board;
+        // model-board에 user 객체를 가지고 있기 때문에, user 데이터도 자동으로 호출한다.
+        // user 객체를 가져서 board가 FK임을 확인-연결이 되어 있기 때문이다.
+    }
 
     // 게시물 수정 페이지
     @GetMapping("/board/{id}/updateForm")
@@ -182,7 +213,7 @@ public class BoardController {
         // 권한 체크 1
         // 로그인이 되어 있고, 게시물의 id와 로그인 된 상태의 id가 같으면 권한 O, 같지 않으면 권한 X
         User sessionUser = (User) session.getAttribute("sessionUser");
-        Board board = boardRepository.findById(id); // M
+        List<BoardDetailDTO> dtos = boardRepository.findByIdJoinReply(id);
 
         // 권한 체크 2
         boolean pageOwner = false;
@@ -190,17 +221,24 @@ public class BoardController {
         // mustache에서 '수정/삭제'버튼의 유무를 boolean으로 줄 것이기 때문에, 디폴트값이 필요하다.
 
         if (sessionUser != null) {
-            pageOwner = sessionUser.getId() == board.getUser().getId();
+            pageOwner = sessionUser.getId() == dtos.get(0).getBoardUserId();
+
             System.out.println("로그인 된 아이디 : " + sessionUser.getId());
-            System.out.println("게시물 주인 : " + board.getUser().getId());
+            System.out.println("게시물 주인 : " + dtos.get(0).getBoardUserId());
         } else {
         }
         // boolean pageOwner = sessionUser.getId() == board.getUser().getId();
         // sessionUser의 null 값일 때(로그아웃 상태), 오류가 터진다.
 
-        request.setAttribute("board", board);
+        // replyRepository.findByIdJoinReply(dtos.get(0).getBoardUserId(),
+        // sessionUser.getId());
+        // if ()
+
+        System.out.println("테스트 : 사이즈 : " + dtos.size());
+
+        request.setAttribute("dtos", dtos);
         request.setAttribute("pageOwner", pageOwner);
-        return "board/detailForm"; // V
+        return "board/detailForm"; //
     }
 
 }
