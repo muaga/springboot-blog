@@ -88,6 +88,7 @@ public class BoardRepository {
         sql += "left outer join user_tb ru ";
         sql += "on r.user_id = ru.id ";
         sql += "where b.id = :boardId ";
+        sql += "order by reply_id desc ";
         Query query = em.createNativeQuery(sql);
         // QLRM
         // model에 받지 않고, qlrm을 통해서 DTO에 데이터를 받아야 하는 경우
