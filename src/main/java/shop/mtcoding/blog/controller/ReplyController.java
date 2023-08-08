@@ -74,9 +74,11 @@ public class ReplyController {
         if (sessionUser.getId() != reply.get(0).getUser().getId()) {
             return "redirect:/40x"; // 403 권한없음
         }
+        // id를 하면 안되는 이유, 댓글 id ≠ 댓글유저id
 
         replyRepository.delete(id);
         return "redirect:/board/" + boardDetailDTO.getBoardId();
+        // redirect를 게시물상세보기 엔드포인트로 해줘야 제자리에서 댓글만 삭제된 것 처럼 나온다.
     }
 
 }
