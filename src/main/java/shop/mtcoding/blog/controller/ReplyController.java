@@ -58,22 +58,22 @@ public class ReplyController {
 
     // 댓글삭제
     @PostMapping("/reply/{replyId}/delete")
-    public String delete(@PathVariable Integer replyId, Reply reply) {
+    public String delete(@PathVariable Integer replyId, Integer boardId, Integer replyUserId) {
         System.out.println("테스트 : replyId : " + replyId);
-        System.out.println("테스트 : boardId : " + reply.getBoard().getId());
+        System.out.println("테스트 : boardId : " + boardId);
 
         User sessionUser = (User) session.getAttribute("sessionUser");
         if (sessionUser == null) {
             return "redirect:/loginForm"; // 401
         }
 
-        Reply reply2 = replyRepository.findById(reply.getUser().getId());
+        Reply reply2 = replyRepository.findById(replyUserId);
         if (sessionUser.getId() != reply2.getUser().getId()) {
             return "redirect:/40x"; // 403 권한없음
         }
 
         replyRepository.delete(replyId);
-        return "redirect:/board/" + reply.getBoard().getId();
+        return "redirect:/board/" + boardId;
     }
 
 }
