@@ -72,11 +72,14 @@
                 <form action="/reply/{{replyId}}/delete" method="post" enctype="application/x-www-form-urlencoded">
                     <input type="hidden" class="form-control" value="{{boardId}}" name="boardId">
                     <input type="hidden" class="form-control" value="{{replyUserId}}" name="replyUserId">
+                    <!-- 댓글 삭제에서 해당 dtos 결과의 boardId와 replyUserId를 참조해야하므로, input된 value 값을 참조해야 한다. -->
+                    <!-- name과 value의 값과 댓글삭제 메소드의 매개변수가 참조하는 것이 일치해야 올바르게 값을 전송한다. -->
                     <button type="submit" class="btn"><img width="24" height="24"
                             src="https://img.icons8.com/material/24/waste--v1.png" alt="waste--v1" /></button>
                 </form>
             </div>
         </div>
+    </div>
     </div>
     {{/replyId}}
     {{/dtos}}

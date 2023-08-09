@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import shop.mtcoding.blog.dto.BoardDetailDTO;
 import shop.mtcoding.blog.dto.ReplyWriteDTO;
 import shop.mtcoding.blog.model.Board;
 import shop.mtcoding.blog.model.Reply;
@@ -57,23 +58,27 @@ public class ReplyController {
     }
 
     // 댓글삭제
-    @PostMapping("/reply/{replyId}/delete")
-    public String delete(@PathVariable Integer replyId, Integer boardId, Integer replyUserId) {
-        System.out.println("테스트 : replyId : " + replyId);
-        System.out.println("테스트 : boardId : " + boardId);
+    @PostMapping("/reply/{id}/delete")
+    public String delete(@PathVariable Integer id, BoardDetailDTO boardDetailDTO) {
+        System.out.println("테스트 : replyId : " + id);
+        System.out.println("테스트 : boardId : " + boardDetailDTO.getBoardId());
 
+        // 로그인 유무
         User sessionUser = (User) session.getAttribute("sessionUser");
         if (sessionUser == null) {
             return "redirect:/loginForm"; // 401
         }
 
-        Reply reply2 = replyRepository.findById(replyUserId);
-        if (sessionUser.getId() != reply2.getUser().getId()) {
+        // 본인의 댓글 권한
+        List<Reply> reply = replyRepository.findById(boardDetailDTO.getReplyUserId());
+        if (sessionUser.getId() != reply.get(0).getUser().getId()) {
             return "redirect:/40x"; // 403 권한없음
         }
+        // id를 하면 안되는 이유, 댓글 id ≠ 댓글유저id
 
-        replyRepository.delete(replyId);
-        return "redirect:/board/" + boardId;
+        replyRepository.delete(id);
+        return "redirect:/board/" + boardDetailDTO.getBoardId();
+        // redirect를 게시물상세보기 엔드포인트로 해줘야 제자리에서 댓글만 삭제된 것 처럼 나온다.
     }
 
 }

@@ -42,12 +42,12 @@ public class ReplyRepository {
     // 하지만 ORM이 조금 더 간편해서 join을 할 수 있으면 사용해도 좋다.
 
     // 댓글 findById
-    public Reply findById(Integer userId) {
+    public List<Reply> findById(Integer userId) {
         Query query = em.createNativeQuery("select * from reply_tb where user_id = :userId",
                 Reply.class);
         // ORM을 통해서, 자동으로 user_id와 board_id가 생성되고, user_id로 username을 가지고 올 수 있다.
         query.setParameter("userId", userId);
-        return (Reply) query.getSingleResult();
+        return query.getResultList();
     }
 
     // 댓글 삭제
