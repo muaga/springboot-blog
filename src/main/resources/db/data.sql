@@ -11,4 +11,6 @@ insert into board_tb(title, content, user_id, created_at) values('제목 8', '�
 insert into board_tb(title, content, user_id, created_at) values('제목 9', '내용 7' , 2, now());
 INSERT INTO REPLY_TB (comment, board_id, user_id) VALUES ('잘했어요', 9, 1);
 INSERT INTO REPLY_TB (comment, board_id, user_id) VALUES ('귯', 9, 1);
+insert into user_tb(username, password, email) values('hong', '$2a$10$vFhXoCRQAwdXIsjdCge8n.CZv.CKmHGpAsdhPzMoDMhzr6TdOW7Le', 'hong@nate.com');
+
 

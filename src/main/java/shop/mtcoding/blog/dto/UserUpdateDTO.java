@@ -20,4 +20,8 @@ import lombok.Setter;
 @Setter
 public class UserUpdateDTO {
     private String password;
+
+    public UserUpdateDTO(String password) {
+        this.password = password;
+    }
 }

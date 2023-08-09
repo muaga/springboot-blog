@@ -63,20 +63,35 @@ public class ReplyController {
         System.out.println("테스트 : replyId : " + id);
         System.out.println("테스트 : boardId : " + boardDetailDTO.getBoardId());
 
-        // 로그인 유무
+        // 부가로직
+
+        // * 게시물 id 유효성 검사
+        if (boardDetailDTO.getBoardId() == null) {
+            return "redirect:/40x"; // 403 권한없음
+        }
+
+        // 1. 로그인 유무
         User sessionUser = (User) session.getAttribute("sessionUser");
         if (sessionUser == null) {
             return "redirect:/loginForm"; // 401
         }
 
-        // 본인의 댓글 권한
+        // 2. 본인의 댓글 권한
         List<Reply> reply = replyRepository.findById(boardDetailDTO.getReplyUserId());
         if (sessionUser.getId() != reply.get(0).getUser().getId()) {
             return "redirect:/40x"; // 403 권한없음
         }
-        // id를 하면 안되는 이유, 댓글 id ≠ 댓글유저id
+        // @PathVariable id를 하면 안되는 이유, 댓글 id ≠ 댓글유저id
 
-        replyRepository.delete(id);
+        // 2번째방법
+        // Reply reply = replyRepository.findById(id); -> 댓글 id로 1건 찾아오기
+        // if (reply.getUser().getId() != sessionUser.getId()) { -> 해당 댓글에 대한 userId
+        // return "redirect:/40x"; // 403
+        // }
+        // @PathVariable id를 해도 되는 이유, 댓글의 {id}로 댓글을 찾은 후 해당 댓글의 user를 찾으니까
+
+        // 핵심로직
+        replyRepository.deleteById(id);
         return "redirect:/board/" + boardDetailDTO.getBoardId();
         // redirect를 게시물상세보기 엔드포인트로 해줘야 제자리에서 댓글만 삭제된 것 처럼 나온다.
     }

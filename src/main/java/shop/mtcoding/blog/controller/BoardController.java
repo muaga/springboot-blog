@@ -41,7 +41,7 @@ public class BoardController {
     // 객체의 데이터를 보고 싶을 때 해당 코드를 사용해보면 된다.
     @GetMapping("/test/dtos")
     public List<BoardDetailDTO> test2() {
-        List<BoardDetailDTO> dtos = boardRepository.findByIdJoinReply(9);
+        List<BoardDetailDTO> dtos = boardRepository.findByIdJoinReply(1, null);
         for (BoardDetailDTO boardDetailDTO : dtos) {
             System.out.println("test : " + boardDetailDTO.getBoardTitle());
         }
@@ -210,12 +210,24 @@ public class BoardController {
     // localhost:8080/board/50
     @GetMapping("/board/{id}")
     public String detailForm(@PathVariable Integer id, HttpServletRequest request) { // C
-        // 권한 체크 1
+        // 부가로직
+        // 1. 게시물, 댓글 로그인 인증
         // 로그인이 되어 있고, 게시물의 id와 로그인 된 상태의 id가 같으면 권한 O, 같지 않으면 권한 X
         User sessionUser = (User) session.getAttribute("sessionUser");
-        List<BoardDetailDTO> dtos = boardRepository.findByIdJoinReply(id);
 
-        // 권한 체크 2
+        // 2. 댓글 권한 체크 및 게시물 select
+        List<BoardDetailDTO> dtos = null;
+        // 최초 DTO에 받은 데이터는 null
+        if (sessionUser == null) {
+            dtos = boardRepository.findByIdJoinReply(id, null);
+            // 로그아웃 상태라면, 게시글만 보이도록 한다.
+        } else {
+            dtos = boardRepository.findByIdJoinReply(id, sessionUser.getId());
+            // 로그인 상태라면, 1) 로그인 유저가 댓글 유저인지 확인과 2)게시글을 보이도록 한다.
+            // 1) -> 댓글 유저가 아니라면 게시글만 보일 것이다.
+        }
+
+        // 3. 게시물 권한 체크
         boolean pageOwner = false;
         // 페이지의 주인은 아닌 것이 기본 값 -> null 터짐 방지
         // mustache에서 '수정/삭제'버튼의 유무를 boolean으로 줄 것이기 때문에, 디폴트값이 필요하다.
@@ -225,16 +237,9 @@ public class BoardController {
 
             System.out.println("로그인 된 아이디 : " + sessionUser.getId());
             System.out.println("게시물 주인 : " + dtos.get(0).getBoardUserId());
-        } else {
         }
         // boolean pageOwner = sessionUser.getId() == board.getUser().getId();
         // sessionUser의 null 값일 때(로그아웃 상태), 오류가 터진다.
-
-        // replyRepository.findByIdJoinReply(dtos.get(0).getBoardUserId(),
-        // sessionUser.getId());
-        // if ()
-
-        System.out.println("테스트 : 사이즈 : " + dtos.size());
 
         request.setAttribute("dtos", dtos);
         request.setAttribute("pageOwner", pageOwner);

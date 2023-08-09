@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
@@ -122,7 +123,6 @@ public class UserController {
         if (joinDTO.getUsername() == null || joinDTO.getUsername().isEmpty()) {
             return "redirct:/40x";
         }
-
         if (joinDTO.getPassword() == null || joinDTO.getPassword().isEmpty()) {
             return "redirct:/40x";
         }
@@ -156,7 +156,7 @@ public class UserController {
             // "유저네임이 중복되었습니다" : 응답 / BAD : HTTP 상태코드
             // ★★★ HTTP 상태코드 -> 이것을 기준으로 then/catch를 나눈다.
         }
-        return new ResponseEntity<String>("유저네임을 사용할 수 없습니다.", HttpStatus.OK);
+        return new ResponseEntity<String>("유저네임을 사용할 수 있습니다.", HttpStatus.OK);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -172,13 +172,24 @@ public class UserController {
             return "redirect:/40x";
         }
 
-        // 핵심로직
-        try {
-            User user = userRepository.findByUsernameAndPassword(loginDTO);
+        // 회원가입된 리스트에서 login유저의 username찾기
+        User user = userRepository.findByUsername(loginDTO.getUsername());
+        System.out.println("logintest : " + user.getPassword());
+        System.out.println("logintest : " + loginDTO.getPassword());
+
+        // login유저의 비밀번호를 해시코드로 변환하기
+        String encPassword = BCrypt.hashpw(loginDTO.getPassword(), BCrypt.gensalt());
+        System.out.println("logintest : - encPassword  : " + encPassword);
+
+        // login유저가 입력한 해시코드와 회원가입할 때 저장된 해시코드를 true/false로 비교하기
+        boolean isValid = BCrypt.checkpw(loginDTO.getPassword(), encPassword);
+        System.out.println("logintest : " + isValid);
+
+        // true이면 아래의 코드가 진행되도록 하기
+        if (isValid == true) {
             session.setAttribute("sessionUser", user);
-            // 서버 측에 sessionUser가 남겨져 있다.
             return "redirect:/";
-        } catch (Exception e) {
+        } else {
             return "redirect:/exLogin";
         }
     }

@@ -1,12 +1,19 @@
 package shop.mtcoding.blog.repository;
 
+import java.util.List;
+
 import javax.persistence.EntityManager;
 import javax.persistence.Query; // 이거를 써야한다.
 
+import org.mindrot.jbcrypt.BCrypt;
+import org.qlrm.mapper.JpaResultMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository; // 이거를 써야한다.
 import org.springframework.transaction.annotation.Transactional;
 
+import com.mysql.cj.log.Log;
+
+import shop.mtcoding.blog.dto.BoardDetailDTO;
 import shop.mtcoding.blog.dto.JoinDTO;
 import shop.mtcoding.blog.dto.LoginDTO;
 import shop.mtcoding.blog.dto.UpdateDTO;
@@ -60,20 +67,40 @@ public class UserRepository {
                 "insert into user_tb(username, password, email) values(:username, :password, :email)");
         System.out.println("테스트 : " + 2);
 
+        // 사용자로부터 입력받은 password를 해시코드인 encPassword로 변환
+        String encPassword = BCrypt.hashpw(joinDTO.getPassword(), BCrypt.gensalt());
+        System.out.println("encPassword : " + encPassword);
+
+        // 변환된 해시코드를 joinDTO에 넣기
+        joinDTO.setPassword(encPassword);
+        System.out.println("encPassword joinDTO에 듬 : " + joinDTO.getPassword());
+
         query.setParameter("username", joinDTO.getUsername());
-        query.setParameter("password", joinDTO.getPassword());
+
+        // 변환된 해시코드를 업데이트하는 쿼리데이터로 넣기
+        query.setParameter("password", encPassword);
         query.setParameter("email", joinDTO.getEmail());
-        System.out.println("테스트 : " + 3);
+        System.out.println("encPassword : 들어감");
 
         query.executeUpdate(); // 쿼리를 전송(DBMS)
-        System.out.println("테스트 : " + 4);
-
+        System.out.println("encPassword : 쿼리전송함");
     }
 
     // 회원정보 수정기능
     @Transactional
     public void update(UserUpdateDTO userUpdateDTO, Integer id) {
         Query query = em.createNativeQuery("update user_tb set password = :password where id = :id");
+
+        // 사용자로부터 입력받은 password를 해시코드인 encPassword로 변환
+        String encPassword = BCrypt.hashpw(userUpdateDTO.getPassword(), BCrypt.gensalt());
+        System.out.println("logintest - update encPassword : " + encPassword);
+
+        // 변환된 해시코드를 joinDTO에 넣기
+        userUpdateDTO.setPassword(encPassword);
+
+        System.out.println("encPassword joinDTO에 듬 : " + userUpdateDTO.getPassword());
+
+        // 변환된 해시코드를 업데이트하는 쿼리데이터로 넣기
         query.setParameter("password", userUpdateDTO.getPassword());
         query.setParameter("id", id);
         query.executeUpdate();

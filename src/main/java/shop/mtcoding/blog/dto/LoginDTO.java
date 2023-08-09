@@ -20,4 +20,7 @@ public class LoginDTO {
     private String username;
     private String password;
 
+    public LoginDTO(String password) {
+        this.password = password;
+    }
 }
