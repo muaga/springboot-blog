@@ -41,7 +41,7 @@ public class BoardController {
     // 객체의 데이터를 보고 싶을 때 해당 코드를 사용해보면 된다.
     @GetMapping("/test/dtos")
     public List<BoardDetailDTO> test2() {
-        List<BoardDetailDTO> dtos = boardRepository.findByIdJoinReply(1);
+        List<BoardDetailDTO> dtos = boardRepository.findByIdJoinReply(9);
         for (BoardDetailDTO boardDetailDTO : dtos) {
             System.out.println("test : " + boardDetailDTO.getBoardTitle());
         }
