@@ -112,5 +112,4 @@ public class UserRepository {
         query.setParameter("id", id);
         return (User) query.getSingleResult();
     }
-
 }

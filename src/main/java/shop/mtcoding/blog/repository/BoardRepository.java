@@ -49,9 +49,30 @@ public class BoardRepository {
         return query.getResultList();
     }
 
+    // findByAll
+    // localhost:8080?page=0 / ?keyword=""
+    // 검색 후 게시물 paging 쿼리
+    public List<Board> findByAll(int page, String keyword) {
+        final int SIZE = 3;
+        Query query = em.createNativeQuery(
+                "select * from board_tb where title like :keyword order by id desc limit :page, :size ", Board.class);
+
+        query.setParameter("keyword", "%" + keyword + "%");
+        query.setParameter("page", page * SIZE);
+        query.setParameter("size", SIZE);
+        return query.getResultList();
+    }
+
     // 총 게시글 수
     public List<Board> findByAllBoard() {
         Query query = em.createNativeQuery("select * from board_tb", Board.class);
+        return query.getResultList();
+    }
+
+    // 검색 결과 게시글 수
+    public List<Board> findByAllBoard(String keyword) {
+        Query query = em.createNativeQuery("select * from board_tb where title like :keyword", Board.class);
+        query.setParameter("keyword", "%" + keyword + "%");
         return query.getResultList();
     }
 

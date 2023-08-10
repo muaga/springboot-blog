@@ -1,20 +1,56 @@
 {{> /layout/header}}
 
+
 <div class="container p-5">
+    <div class="mb-2 d-flex justify-content-end">
+        <form class="d-flex" action="/" method="get" onsubmit="return vaild()">
+
+            <input id="keyword" class="form-control me-2" type="text" name="keyword" placeholder="Search" required>
+            <!-- 검색을 하면 name인 keyword를 쿼리스트링으로 가지고 간다.-->
+            <button class="btn btn-primary" type="submit">Search</button>
+        </form>
+    </div>
     {{#boardList}}
-        <div class="card">
-            <div class="card-body">
-                <h4 class="card-title mb-3">{{title}}</h4>
-                <a href="/board/{{id}}" class="btn btn-outline-danger">상세보기</a>
-            </div>
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title mb-3">{{title}}</h4>
+            <a href="/board/{{id}}" class="btn btn-outline-danger">상세보기</a>
         </div>
+    </div>
     {{/boardList}}
     <ul class="pagination d-flex justify-content-center">
-        <li class="page-item {{#first}}disabled{{/first}}"><a class="page-link" href="?page={{prevPage}}">Previous</a></li>
+        <!-- keyword가 존재한다면-->
+        {{#keyword}}
+        <li class="page-item {{#first}}disabled{{/first}}"><a class="page-link"
+                href="?page={{prevPage}}&keyword={{keyword}}">Previous</a>
+        </li>
+        <li class="page-item {{#last}}disabled{{/last}}"><a class="page-link"
+                href="?page={{nextPage}}&keyword={{keyword}}">Next</a></li>
+        <!-- ?page=0 부분은 변수가 되어야 한다. +1로 -->
+        {{/keyword}}
+        <!-- keyword가 null 또는 공백이라면-->
+        {{^keyword}}
+        <li class="page-item {{#first}}disabled{{/first}}"><a class="page-link" href="?page={{prevPage}}">Previous</a>
+        </li>
         <li class="page-item {{#last}}disabled{{/last}}"><a class="page-link" href="?page={{nextPage}}">Next</a></li>
-        {{! ?page=0 부분은 변수가 되어야 한다. +1로 }}
+        {{/keyword}}
     </ul>
 </div>
+
+<script>
+    function isWhitespace(str) {
+        return str.trim() === '';
+    }
+
+    function vaild() {
+        let keyword = document.querySelector("#keyword").value;
+        console.log(keyword);
+        if (isWhitespace(keyword)) {
+            alert('공백을 입력할 수 없습니다.');
+            return false;
+        }
+    }
+</script>
 
 
 {{> /layout/footer}}

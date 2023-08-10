@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>자바스크립트 공백제거</title>
+</head>
+
+<body>
+    <h1>자바스크립트 공백제거</h1>
+    <script>
+        function isWhitespace(str) {
+            return str.trim() === "";
+        }
+
+        // 테스트
+        let testString1 = "              ";
+        console.log(isWhitespace(testString1)); // true
+    </script>
+</body>
+
+</html>

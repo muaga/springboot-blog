@@ -49,34 +49,38 @@ public class UserController {
     }
 
     // 회원 정보 수정 페이지 - select
-    @GetMapping("/user/{id}/updateForm")
-    public String updateForm(@PathVariable Integer id, HttpServletRequest request) {
+    @GetMapping("/user/updateForm")
+    public String updateForm(HttpServletRequest request) {
         // 부가로직
         // 1. 로그인 인증
-        User user = userRepository.findById(id);
-        user = (User) session.getAttribute("sessionUser");
-        if (user == null) {
+        User sesseionUser = (User) session.getAttribute("sessionUser");
+        if (sesseionUser == null) {
             return "redirect:/loginForm";
         }
-        // 핵심로직
+
+        // ★★ 핵심로직
+        User user = userRepository.findByUsername(sesseionUser.getUsername());
+        // 클라이언트는 주소에 적힌 값을 신뢰할 수 없다. 그래서 id X
+        // session값을 받아서 조회하는 경우는 굳이 권한인증도 할 필요가 없다.
+        // unique로 조회하면 풀스캔없이 인덱스스캔을 한다.
         request.setAttribute("user", user);
 
         return "user/updateForm";
     }
 
     // 회원 정보 수정 기능
-    @PostMapping("/user/{id}/update")
-    public String update(@PathVariable Integer id, UserUpdateDTO userUpdateDTO) {
+    @PostMapping("/user/update")
+    public String update(UserUpdateDTO userUpdateDTO) {
         // 부가로직
         // 1. 로그인 인증
-        User user = userRepository.findById(id);
-        user = (User) session.getAttribute("sessionUser");
-        if (user == null) {
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        if (sessionUser == null) {
             return "redirect:/loginForm";
         }
 
         // 핵심로직
-        userRepository.update(userUpdateDTO, id);
+        User user = userRepository.findByUsername(sessionUser.getUsername());
+        userRepository.update(userUpdateDTO, sessionUser.getId());
         return "redirect:/";
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -186,10 +190,15 @@ public class UserController {
         System.out.println("logintest : " + isValid);
 
         // true이면 아래의 코드가 진행되도록 하기
-        if (isValid == true) {
-            session.setAttribute("sessionUser", user);
-            return "redirect:/";
-        } else {
+        try {
+            if (isValid == true) {
+                session.setAttribute("sessionUser", user);
+                // 원래는 session에 로그인 인증을 할 id, username, email만 담아야 한다.
+                return "redirect:/";
+            } else {
+                return "redirect:/LoginForm"; // UX-자바스크립트하기
+            }
+        } catch (Exception e) {
             return "redirect:/exLogin";
         }
     }

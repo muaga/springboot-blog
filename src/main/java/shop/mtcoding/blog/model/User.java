@@ -26,8 +26,9 @@ public class User {
     @Column(nullable = false, length = 20, unique = true)
     private String username;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 60)
     // DB의 데이터 길이를 위와 같이 조절할 수 있다.
+    // 길이는 필요한 만큼 적용한다.
     private String password;
 
     @Column(nullable = false, length = 20)

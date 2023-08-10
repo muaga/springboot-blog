@@ -36,6 +36,9 @@ public class BoardController {
     @Autowired
     private ReplyRepository replyRepository;
 
+    @Autowired
+    private ErrorController errorController;
+
     @ResponseBody
     // 변수의 데이터를 JSON으로 보여준다.
     // 객체의 데이터를 보고 싶을 때 해당 코드를 사용해보면 된다.
@@ -132,12 +135,19 @@ public class BoardController {
     // 게시물목록 페이지
     // 유효성 검사, 인증 검사 X
     @GetMapping({ "/", "/board" })
-    public String index(@RequestParam(defaultValue = "0") Integer page, HttpServletRequest request) {
+    public String index(String keyword,
+            @RequestParam(defaultValue = "0") Integer page,
+            HttpServletRequest request) {
         // get요청에서 매개변수는 쿼리스트링으로 받을 수 있다.
         // @RequestParam은 쿼리스트링을 파싱해준다.
         // loaclhost:8080/뒤에 ?쿼리스트링이 없다. 즉 null값이다.
         // page를 위해, @RequestParam의 디폴트값을 "0"으로 지정하면
         // localhost:8080/?page=0
+
+        // @RequestParam("") String keyword를 하지 않아도 되는 이유
+        // mustache에 keyword가 null이면 URL에도 뜨지 않고 keyword가 있으면 뜨고
+        // 보기 좋다.
+        // @RequestParam이면 keyword가 null or 값이라도 무조건 뜬다.
 
         // ★ get : 매개변수 -> 쿼리스트링(body가 없음)
         // ★ post : 매개변수 -> body값
@@ -145,27 +155,41 @@ public class BoardController {
         // 페이지당 게시물 수 상수로 고정
         final int PAGESIZE = 3;
 
-        List<Board> boardList = boardRepository.findByAll(page);
-        System.out.println("테스트 : " + boardList.size());
-        // 각 페이지당 게시물 수
-        System.out.println("테스트 : " + boardList.get(0).getTitle());
-        // 0페이지의 title
+        // 검색
+        // 검색을 하면 ?keyword=공백 ≠ 메인 or 일반화면에는 ?keyword=null / ?page=0
+        List<Board> boardList = null;
+        int boardAllSize = 0;
 
-        // 반드시 여기서 출력해서 보기
+        // @RequestParam("") String keyword에서
+        // 공백으로 받거나 아무 값을 안 받으면 디폴트값이 isblank -> 총 게시글 수
+        // 공백 아닌 검색을 -> 검색 게시글 수
 
-        List<Board> boardAllList = boardRepository.findByAllBoard();
-        int boardAllSize = boardAllList.size();
-        // 총 게시물 수
+        if (keyword == null || keyword.trim().isEmpty()) {
+            // 검색을 하지 않았으니, 기본 목록페이지를 보여주면 된다.
+            boardList = boardRepository.findByAll(page);
+            List<Board> boardAllList = boardRepository.findByAllBoard();
+            boardAllSize = boardAllList.size();
+            // 총 게시물 수
+        } else {
+            // 검색을 하면 그에 맞는 게시물 페이지를 보여준다.
+            boardList = boardRepository.findByAll(page, keyword);
+            List<Board> boardAllList = boardRepository.findByAllBoard(keyword);
+            boardAllSize = boardAllList.size();
+            // 검색 결과 게시물 수
+        }
         // 쿼리 자체에 count를 달면, 받는 것이 int라서 size()를 굳이 하지 않아도 된다.
-        System.out.println("총 게시물 수 : " + boardAllSize);
+
+        System.out.println("게시글 수 : " + boardAllSize);
 
         request.setAttribute("boardList", boardList);
+        request.setAttribute("keyword", keyword);
         request.setAttribute("nextPage", page + 1);
         request.setAttribute("prevPage", page - 1);
         request.setAttribute("first", page == 0 ? true : false);
         request.setAttribute("last",
                 (boardAllSize / PAGESIZE) == page
-                        || ((boardAllSize % PAGESIZE == 0) && (boardAllSize / PAGESIZE) - 1 == page) ? true : false);
+                        || ((boardAllSize % PAGESIZE == 0) && (boardAllSize / PAGESIZE) - 1 == page) ? true
+                                : false);
 
         return "index";
     }
@@ -195,10 +219,10 @@ public class BoardController {
         }
         // 2. 공백, null 제한(우회 접근 제한)
         if (writeDTO.getTitle() == null || writeDTO.getTitle().isEmpty()) {
-            return "redirct:/40x";
+            return "redirect:/40x";
         }
         if (writeDTO.getContent() == null || writeDTO.getContent().isEmpty()) {
-            return "redirct:/40x";
+            return "redirect:/40x";
         }
         // 핵심로직
         boardRepository.save(writeDTO, sessionUser.getId());

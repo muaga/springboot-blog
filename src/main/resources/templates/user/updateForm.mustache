@@ -6,7 +6,7 @@
         <div class="card-header"><b>회원정보를 수정해주세요</b></div>
         <div class="card-body">
             {{#user}}
-            <form action="/user/{{id}}/update" method="post" enctype="application/x-www-form-urlencoded">
+            <form action="/user/update" method="post" enctype="application/x-www-form-urlencoded">
                 <!--method를 쓰지 않으면, 디폴트값이 GET이다.-->
                 <div class="mb-3">
                     <input type="text" class="form-control" placeholder="Enter username" name="username" value="{{username}}" disabled>
