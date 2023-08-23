@@ -178,16 +178,12 @@ public class UserController {
 
         // 회원가입된 리스트에서 login유저의 username찾기
         User user = userRepository.findByUsername(loginDTO.getUsername());
-        System.out.println("logintest : " + user.getPassword());
-        System.out.println("logintest : " + loginDTO.getPassword());
-
-        // login유저의 비밀번호를 해시코드로 변환하기
-        String encPassword = BCrypt.hashpw(loginDTO.getPassword(), BCrypt.gensalt());
-        System.out.println("logintest : - encPassword  : " + encPassword);
+        System.out.println("user의 logintest : " + user.getPassword());
+        System.out.println("loginUser의 logintest : " + loginDTO.getPassword());
 
         // login유저가 입력한 해시코드와 회원가입할 때 저장된 해시코드를 true/false로 비교하기
-        boolean isValid = BCrypt.checkpw(loginDTO.getPassword(), encPassword);
-        System.out.println("logintest : " + isValid);
+        boolean isValid = BCrypt.checkpw(loginDTO.getPassword(), user.getPassword());
+        System.out.println("최종비교 logintest : " + isValid);
 
         // true이면 아래의 코드가 진행되도록 하기
         try {
@@ -196,7 +192,7 @@ public class UserController {
                 // 원래는 session에 로그인 인증을 할 id, username, email만 담아야 한다.
                 return "redirect:/";
             } else {
-                return "redirect:/LoginForm"; // UX-자바스크립트하기
+                return "redirect:/loginForm"; // UX-자바스크립트하기
             }
         } catch (Exception e) {
             return "redirect:/exLogin";
